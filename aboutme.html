@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Mim - Editável</title>
+    <style>
+        /* Estilos básicos para a página */
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 20px;
+        }
+
+        /* O container principal do nosso item colapsável */
+        .acordeao {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* O cabeçalho clicável */
+        .acordeao-cabecalho {
+            background-color: #f7f7f7;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .acordeao-cabecalho h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* O ícone da seta */
+        .acordeao-cabecalho::after {
+            content: '▼';
+            transition: transform 0.3s ease;
+        }
+        
+        /* Gira a seta quando o item está ativo (aberto) */
+        .acordeao.ativo .acordeao-cabecalho::after {
+            transform: rotate(180deg);
+        }
+        
+        /* O conteúdo que será ocultado/mostrado */
+        .acordeao-conteudo {
+              display: none; /* Começa escondido */
+              padding: 15px;
+              border-top: 1px solid #eee;
+              max-height: 0;
+              overflow: hidden;
+              transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        /* Mostra o conteúdo quando a classe 'ativo' está presente */
+           .acordeao.ativo .acordeao-conteudo {
+              display: block;
+              max-height: 500px;
+              padding: 15px;
+        }
+
+        /* --- ESTILOS PARA O FORMULÁRIO DENTRO DO ACORDEÃO --- */
+        .campo {
+            margin-bottom: 15px;
+        }
+        .campo label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .campo input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <!--
+      ESTRUTURA DO ACORDEÃO CONTENDO OS CAMPOS EDITÁVEIS
+    -->
+    <div class="acordeao">
+            <button class="acordeao-cabecalho" aria-expanded="false" aria-controls="acordeao-conteudo">
+                <h1 style="margin:0; font-size:24px; background:none; border:none;">Dados Pessoais</h1>
+            </button>
+            <div class="acordeao-conteudo" id="acordeao-conteudo">
+                <form id="formDados" autocomplete="on" novalidate>
+                    <div class="campo">
+                        <label for="nome">Nome:</label>
+                        <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
+                    </div>
+                    <div class="campo">
+                        <label for="idade">Idade:</label>
+                        <input type="number" id="idade" name="idade" placeholder="Digite sua idade" min="1" required>
+                    </div>
+                    <div class="campo">
+                        <label for="aniversario">Aniversário:</label>
+                        <input type="date" id="aniversario" name="aniversario" required>
+                    </div>
+                    <button id="btnSalvar" type="submit">Salvar Dados</button>
+                    <div id="msgErro" style="color:red; margin-top:10px; display:none;"></div>
+                </form>
+            </div>
+    </div>
+
+    <!-- O link para voltar permanece fora e sempre visível -->
+    <div class="voltar">
+        <a href="index.html">Voltar para a Página Inicial</a>
+    </div>   
+    
+
+    <script>
+            // --- PARTE 1: LÓGICA DO ACORDEÃO COM ACESSIBILIDADE ---
+            const acordeaoDiv = document.querySelector('.acordeao');
+            const cabecalhoAcordeao = acordeaoDiv.querySelector('.acordeao-cabecalho');
+            const conteudoAcordeao = document.getElementById('acordeao-conteudo');
+
+            cabecalhoAcordeao.addEventListener('click', () => {
+                const isActive = acordeaoDiv.classList.toggle('ativo');
+                cabecalhoAcordeao.setAttribute('aria-expanded', isActive);
+            });
+
+            // --- PARTE 2: LÓGICA DE SALVAR E CARREGAR DADOS COM VALIDAÇÃO ---
+            const nomeInput = document.getElementById('nome');
+            const idadeInput = document.getElementById('idade');
+            const aniversarioInput = document.getElementById('aniversario');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const formDados = document.getElementById('formDados');
+            const msgErro = document.getElementById('msgErro');
+
+            function validarCampos() {
+                if (!nomeInput.value.trim()) {
+                    return 'O nome é obrigatório.';
+                }
+                if (!idadeInput.value || idadeInput.value <= 0) {
+                    return 'A idade deve ser maior que zero.';
+                }
+                if (!aniversarioInput.value) {
+                    return 'O aniversário é obrigatório.';
+                }
+                return '';
+            }
+
+            function salvarDados(e) {
+                e.preventDefault();
+                const erro = validarCampos();
+                if (erro) {
+                    msgErro.textContent = erro;
+                    msgErro.style.display = 'block';
+                    return;
+                }
+                msgErro.style.display = 'none';
+                localStorage.setItem('nomeUsuario', nomeInput.value);
+                localStorage.setItem('idadeUsuario', idadeInput.value);
+                localStorage.setItem('aniversarioUsuario', aniversarioInput.value);
+                alert('Dados salvos com sucesso!');
+            }
+
+            function carregarDados() {
+                const nomeSalvo = localStorage.getItem('nomeUsuario');
+                const idadeSalva = localStorage.getItem('idadeUsuario');
+                const aniversarioSalvo = localStorage.getItem('aniversarioUsuario');
+
+                if (nomeSalvo) nomeInput.value = nomeSalvo;
+                if (idadeSalva) idadeInput.value = idadeSalva;
+                if (aniversarioSalvo) aniversarioInput.value = aniversarioSalvo;
+
+                // Se algum dado foi carregado, já abrimos o acordeão para o usuário ver.
+                if (nomeSalvo || idadeSalva || aniversarioSalvo) {
+                    acordeaoDiv.classList.add('ativo');
+                    cabecalhoAcordeao.setAttribute('aria-expanded', true);
+                }
+            }
+
+            // --- LIGANDO TUDO ---
+            formDados.addEventListener('submit', salvarDados);
+            carregarDados(); // Carrega os dados assim que a página abre
+
+    </script>
+    
+</body>
+</html>
